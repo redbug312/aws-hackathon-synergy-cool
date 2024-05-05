@@ -19,7 +19,7 @@ Parameters:
 
 Globals:
   Function:
-    Runtime: python3.9
+    Runtime: python3.10
     Timeout: 900
 
 Resources:
