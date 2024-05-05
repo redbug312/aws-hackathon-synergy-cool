@@ -7,19 +7,21 @@ import argparse
 
 kinesis_client = boto3.client('kinesis')
 
-#Write a method to simulate temperature, humidity and air quality index
+# Write a method to simulate temperature, humidity and air quality index
+
+
 def generate_data(probability):
 
     temperature = random.randint(0, 30)
-    humidity =random.randint(40, 59)
+    humidity = random.randint(40, 59)
     air_quality_index = random.randint(0, 50)
-    
+
     # Occasionally generate higher  values
-    if random.random() < probability:  
+    if random.random() < probability:
         temperature = random.randint(35, 80)
-        humidity =  random.randint(65, 100)
+        humidity = random.randint(65, 100)
         air_quality_index = random.randint(101, 200)
-    
+
     data = {
         'temperature': temperature,
         'humidity': humidity,
@@ -28,6 +30,7 @@ def generate_data(probability):
     }
 
     return json.dumps(data)
+
 
 def send_data_to_kinesis(stream_name, data):
 
@@ -40,7 +43,8 @@ def send_data_to_kinesis(stream_name, data):
 
     print(response)
     print(f"Data sent to Kinesis. ShardId: {response['ShardId']}, SequenceNumber: {response['SequenceNumber']}, Data: {data}")
-    
+
+
 def simulate_data_for_duration(stream_name, duration_minutes, probability):
     start_time = time.time()
     end_time = start_time + (duration_minutes * 60)
@@ -49,6 +53,7 @@ def simulate_data_for_duration(stream_name, duration_minutes, probability):
         simulated_data = generate_data(probability)
         send_data_to_kinesis(stream_name, simulated_data)
         time.sleep(1)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Simulate data and send it to Kinesis.")
