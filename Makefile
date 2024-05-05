@@ -25,6 +25,7 @@ lint: venv
 
 .PHONY: deploy
 deploy: samconfig.toml lint
+	$(AWS) sam sync --stack-name sensor-monitoring
 	$(AWS) sam deploy
 
 venv: src/generate-recommendations/requirements.txt
