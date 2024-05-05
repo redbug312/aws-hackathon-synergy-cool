@@ -111,4 +111,29 @@ Please encapsulate the entire recommendations text in <recommendation></recommen
 
 #Add code here
     
-
+def send_recommendations(prompt_text):
+    #Write a method to invoke bedrock model claude 2.1 and send email using SNS with the recommendations as body
+    
+    prompt = f"\n\nHuman: {prompt_text}\n\nAssistant:"
+    payload = {
+        "prompt": prompt,
+        "max_tokens_to_sample": 500,
+        "temperature": 0.2,
+        "top_k": 250,
+        "top_p": 0.999,
+        "stop_sequences": [
+          "\n\nHuman:"
+        ],
+        "anthropic_version": "bedrock-2023-05-31"
+     }
+     
+    response = invoke_endpoint(json.dumps(payload))
+    print(response)
+    recommendations = parse_response(response)
+    print(recommendations)
+    
+    #Send email
+    message_text = f"Dear Facility Manager, \n {recommendations} \n Regards,\n Your AI Assistant"
+    subject_text = "Facility update: Action required for climate control"
+    
+    sent_message = sns_client.publish(TopicArn=SNS_TOPIC_ARN, Message=message_text, Subject=subject_text)
