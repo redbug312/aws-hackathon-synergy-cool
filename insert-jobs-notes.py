@@ -1,10 +1,12 @@
 import boto3
 from datetime import datetime, timedelta
 
-#Write python method to insert into DynamoDB table with columns column jobId, jobDescription, status, notes, assignedTo
+# Write python method to insert into DynamoDB table with columns column jobId, jobDescription, status, notes, assignedTo
+
+
 def insert_data_dynamodb(job_id, job_description, status, completion_date, notes, assigned_to):
     # Initialize DynamoDB client
-    dynamodb = boto3.resource('dynamodb') 
+    dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table("JobsTable")
 
     # Define the item to be inserted
@@ -19,8 +21,9 @@ def insert_data_dynamodb(job_id, job_description, status, completion_date, notes
 
     # Insert the item into DynamoDB
     table.put_item(Item=item)
-    
+
     print(f'Jobs {job_id} created successfully')
+
 
 # Calculate completion date as 7 days back from the current date
 completion_date = datetime.now() - timedelta(days=7)
