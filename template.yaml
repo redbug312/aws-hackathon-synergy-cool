@@ -1,21 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Generate recommendations from streaming
-
-Parameters:
-  NotificationSNSTopicName:
-    Description: 'Lambda will send notification email to this SNS topic'
-    Type: String
-    Default: 'notification-topic'
-
-  NotificationEmail:
-    Description: 'Notification email will be sent to this email address'
-    Type: String
-
-  BedrockModelId:
-    Description: Amazon Bedrock Model Id
-    Type: String
-    Default: 'anthropic.claude-v2:1'
+Description: Propose air conditions configuration
 
 Globals:
   Function:
@@ -23,73 +8,52 @@ Globals:
     Timeout: 900
 
 Resources:
-  GenerateRecommendations:
+  DetectActivities:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/generate-recommendations/
+      CodeUri: src/lambda/detect_activities/
       Handler: app.lambda_handler
-      MemorySize: 128
-      Environment:
-        Variables:
-          JOBS_TABLE: !Ref JobsTable
-          SNS_TOPIC_ARN: !Ref NotificationSNSTopic
-          BEDROCK_MODEL_ID: !Ref BedrockModelId
       Events:
-        Stream:
-          Type: Kinesis
+        QueryRoom:
+          Type: Api
           Properties:
-            Stream: !GetAtt SensorKinesisStream.Arn
-            BatchSize: 10
-            StartingPosition: LATEST
-            BisectBatchOnFunctionError: true
-            MaximumRetryAttempts: 1
-            ParallelizationFactor: 5
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - KinesisStreamReadPolicy:
-            StreamName: !Ref SensorKinesisStream
-        - SNSPublishMessagePolicy:
-            TopicName: !GetAtt NotificationSNSTopic.TopicName
-        - DynamoDBReadPolicy:
-            TableName: !Ref JobsTable
-        - Statement:
-            - Effect: Allow
-              Action:
-                - "bedrock:*"
-              Resource: "*"
-
-  SensorKinesisStream:
-    Type: AWS::Kinesis::Stream
+            Path: /rooms/{room_id}/activity
+            Method: get
+  InvestigateLayouts:
+    Type: AWS::Serverless::Function
     Properties:
-      ShardCount: 1
-
-  NotificationSNSTopic:
-    Type: AWS::SNS::Topic
+      CodeUri: src/lambda/investigate_layouts/
+      Handler: app.lambda_handler
+      Events:
+        QueryFloor:
+          Type: Api
+          Properties:
+            Path: /floors/{floor_id}/layout
+            Method: get
+  MonitorSensors:
+    Type: AWS::Serverless::Function
     Properties:
-      TopicName: !Ref NotificationSNSTopicName
-      Subscription:
-        - Protocol: email
-          Endpoint: !Ref NotificationEmail
-
-  JobsTable:
-    Type: AWS::DynamoDB::Table
+      CodeUri: src/lambda/monitor_sensors/
+      Handler: app.lambda_handler
+      Events:
+        QuerySensor:
+          Type: Api
+          Properties:
+            Path: /sensors/{sensor_id}/data
+            Method: get
+  ProposeStrategies:
+    Type: AWS::Serverless::Function
     Properties:
-      AttributeDefinitions:
-        - AttributeName: jobId
-          AttributeType: N
-      BillingMode: PAY_PER_REQUEST
-      KeySchema:
-        - AttributeName: jobId
-          KeyType: HASH
-      TableName: JobsTable
-      SSESpecification:
-        SSEEnabled: true
+      CodeUri: src/lambda/propose_stategies/
+      Handler: app.lambda_handler
+      Events:
+        QueryFloor:
+          Type: Api
+          Properties:
+            Path: /floors/{floor_id}/strategy
+            Method: get
 
 Outputs:
-  JobsTable:
-    Description: Jobs DynamoDB Table
-    Value: !Ref JobsTable
-
-  SensorKinesisStream:
-    Description: Kinesis stream
-    Value: !Ref SensorKinesisStream
+  DetectActivitiesApi:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/rooms/0/activity"
