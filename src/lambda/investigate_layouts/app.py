@@ -25,10 +25,22 @@ class Floor:
         }
 
 
+def bad_request(message: str):
+    return {
+        'statusCode': 400,
+        'body': json.dumps({
+            'error': message,
+        }),
+    }
+
+
 def lambda_handler(event, context):
     path_parameters = event.get('pathParameters', {})
     floor_id = path_parameters.get('floor_id', None)
     logger.info(f'API queries the floor {floor_id}')
+
+    if floor_id is None:
+        return bad_request('missing path parameter floor_id')
 
     room1 = Room('diner')
     room2 = Room('kitchen')
