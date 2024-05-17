@@ -17,7 +17,7 @@ lint: venv
 run: venv
 	$(ENV) streamlit run src/frontend/homepage.py
 
-venv: requirements.txt
+venv: src/layer/python/requirements.txt
 	virtualenv -p $(PYTHON3) venv
 	$(ENV) $(PYTHON3) -m pip install -r $^
 	touch $@  # update timestamp

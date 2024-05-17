@@ -8,11 +8,24 @@ Globals:
     Timeout: 900
 
 Resources:
+  PythonLibrariesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: MyPythonLibrariesLayer
+      Description: Python libraries for lambda functions
+      ContentUri: src/layer/python/
+      CompatibleRuntimes:
+        - python3.10
+      RetentionPolicy: Retain
+    Metadata:
+      BuildMethod: python3.10
   DetectActivities:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/lambda/detect_activities/
       Handler: app.lambda_handler
+      Layers:
+        - !Ref PythonLibrariesLayer
       Events:
         QueryRoom:
           Type: Api
@@ -24,6 +37,8 @@ Resources:
     Properties:
       CodeUri: src/lambda/investigate_layouts/
       Handler: app.lambda_handler
+      Layers:
+        - !Ref PythonLibrariesLayer
       Events:
         QueryFloor:
           Type: Api
@@ -35,6 +50,8 @@ Resources:
     Properties:
       CodeUri: src/lambda/monitor_sensors/
       Handler: app.lambda_handler
+      Layers:
+        - !Ref PythonLibrariesLayer
       Events:
         QuerySensor:
           Type: Api
@@ -46,6 +63,8 @@ Resources:
     Properties:
       CodeUri: src/lambda/propose_stategies/
       Handler: app.lambda_handler
+      Layers:
+        - !Ref PythonLibrariesLayer
       Events:
         QueryFloor:
           Type: Api
