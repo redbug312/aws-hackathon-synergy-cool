@@ -19,6 +19,7 @@ Resources:
       RetentionPolicy: Retain
     Metadata:
       BuildMethod: python3.10
+
   DetectActivities:
     Type: AWS::Serverless::Function
     Properties:
@@ -32,6 +33,7 @@ Resources:
           Properties:
             Path: /rooms/{room_id}/activity
             Method: get
+
   InvestigateLayouts:
     Type: AWS::Serverless::Function
     Properties:
@@ -45,6 +47,7 @@ Resources:
           Properties:
             Path: /floors/{floor_id}/layout
             Method: get
+
   MonitorSensors:
     Type: AWS::Serverless::Function
     Properties:
@@ -58,6 +61,21 @@ Resources:
           Properties:
             Path: /sensors/{sensor_id}/data
             Method: get
+        DataStream:
+          Type: Kinesis
+          Properties:
+            Stream: !GetAtt SensorKinesisStream.Arn
+            StartingPosition: LATEST
+            BatchSize: 10
+            BisectBatchOnFunctionError: true
+            MaximumRetryAttempts: 1
+            ParallelizationFactor: 5
+
+  SensorKinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      ShardCount: 1
+
   ProposeStrategies:
     Type: AWS::Serverless::Function
     Properties:
@@ -76,3 +94,6 @@ Outputs:
   DetectActivitiesApi:
     Description: "API Gateway endpoint URL for Prod stage"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/rooms/0/activity"
+  SensorKinesisStreamArn:
+    Description: Sensor kinesis stream ARN
+    Value: !Ref SensorKinesisStream
