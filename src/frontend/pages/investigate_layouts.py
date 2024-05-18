@@ -42,6 +42,7 @@ if prompt := st.chat_input("write here"):
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 response = generate_response(prompt)
+                print(response)
                 st.write(response.content)
         message = {
             "role": "assistant",
