@@ -32,8 +32,10 @@ st.session_state.humidity_range = humidity_range
 async def heartbeat():
     while st.session_state.keep_running:
         data = {
+            "sensor_id": 0,
             "temperature": random.uniform(*st.session_state.temperature_range),
             "humidity": random.uniform(*st.session_state.humidity_range),
+            "timestamp": int(time.time()),
         }
         response = kinesis_client.put_record(
             StreamName=st.session_state.stream_arn,

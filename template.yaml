@@ -70,11 +70,29 @@ Resources:
             BisectBatchOnFunctionError: true
             MaximumRetryAttempts: 1
             ParallelizationFactor: 5
+      Environment:
+        Variables:
+          SENSOR_DATABASE_TABLE: SensorDatabaseTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SensorDatabaseTable
 
   SensorKinesisStream:
     Type: AWS::Kinesis::Stream
     Properties:
       ShardCount: 1
+
+  SensorDatabaseTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: SensorDatabaseTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
   ProposeStrategies:
     Type: AWS::Serverless::Function
