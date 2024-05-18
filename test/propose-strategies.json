@@ -1,0 +1,6 @@
+{
+  "pathParameters": {
+    "floor_id": "0"
+  },
+  "body": "{\"param1\": 1, \"param2\": 2}"
+}

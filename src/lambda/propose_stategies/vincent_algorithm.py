@@ -165,11 +165,7 @@ def optimize_z(x_values, min_value):
     return optimized_z
 
 
-def vincent_algorithm_test():
-    # Read the input JSON file
-    with open('init.json', 'r') as file:
-        data = json.load(file)
-    
+def vincent_algorithm_test(data):
     # Calculate the volume
     volume = data.get('space_size', 50) * data.get('ceiling_height', 2.5)
     
@@ -209,13 +205,12 @@ def vincent_algorithm_test():
         "total_zx": round(total_zx, 2)
     }
 
-    save_to_json(output_data, "output.json")
-
     print("Optimized percentages:")
     for key, value in optimized_percentages.items():
         print(f"{key}: {value:.2f}")
     print(f"Total y value: {total_y:.2f}")
     print(f"Total zx value: {total_zx:.2f}")
+    return output_data
 
 if __name__ == "__main__":
     vincent_algorithm_test()
