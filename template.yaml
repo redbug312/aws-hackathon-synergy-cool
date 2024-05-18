@@ -19,6 +19,7 @@ Resources:
       RetentionPolicy: Retain
     Metadata:
       BuildMethod: python3.10
+
   DetectActivities:
     Type: AWS::Serverless::Function
     Properties:
@@ -32,6 +33,37 @@ Resources:
           Properties:
             Path: /rooms/{room_id}/activity
             Method: get
+        DataStream:
+          Type: Kinesis
+          Properties:
+            Stream: !GetAtt ActivityKinesisStream.Arn
+            StartingPosition: LATEST
+            MaximumRetryAttempts: 1
+            ParallelizationFactor: 5
+      Environment:
+        Variables:
+          ACTIVITY_DATABASE_TABLE: ActivityDatabaseTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivityDatabaseTable
+
+  ActivityKinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      ShardCount: 1
+
+  ActivityDatabaseTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ActivityDatabaseTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
   InvestigateLayouts:
     Type: AWS::Serverless::Function
     Properties:
@@ -45,6 +77,7 @@ Resources:
           Properties:
             Path: /floors/{floor_id}/layout
             Method: get
+
   MonitorSensors:
     Type: AWS::Serverless::Function
     Properties:
@@ -58,6 +91,39 @@ Resources:
           Properties:
             Path: /sensors/{sensor_id}/data
             Method: get
+        DataStream:
+          Type: Kinesis
+          Properties:
+            Stream: !GetAtt SensorKinesisStream.Arn
+            StartingPosition: LATEST
+            BatchSize: 10
+            BisectBatchOnFunctionError: true
+            MaximumRetryAttempts: 1
+            ParallelizationFactor: 5
+      Environment:
+        Variables:
+          SENSOR_DATABASE_TABLE: SensorDatabaseTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SensorDatabaseTable
+
+  SensorKinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      ShardCount: 1
+
+  SensorDatabaseTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: SensorDatabaseTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
   ProposeStrategies:
     Type: AWS::Serverless::Function
     Properties:
@@ -76,3 +142,9 @@ Outputs:
   DetectActivitiesApi:
     Description: "API Gateway endpoint URL for Prod stage"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/rooms/0/activity"
+  ActivityKinesisStreamArn:
+    Description: Activity kinesis stream ARN
+    Value: !Ref ActivityKinesisStream
+  SensorKinesisStreamArn:
+    Description: Sensor kinesis stream ARN
+    Value: !Ref SensorKinesisStream
