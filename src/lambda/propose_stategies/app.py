@@ -1,6 +1,13 @@
 from enum import Enum
 import json
 import logging
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 添加 calculate_watt 所在目录到 sys.path
+sys.path.append(os.path.join(current_dir, '..'))
+from vincent_algorithm import vincent_algorithm_test
+from vincent_algorithm import save_to_json
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -48,16 +55,28 @@ def lambda_handler(event, context):
     path_parameters = event.get('pathParameters', {})
     floor_id = path_parameters.get('floor_id', None)
     logger.info(f'API queries the floor {floor_id}')
+    query_parameters = event.get('queryStringParameters', {})
+    param1 = query_parameters.get('param1', None)
+    param2 = query_parameters.get('param2', None)
+    logger.info(f'Query parameters: param1={param1}, param2={param2}')
+
+    if param1 is None or param2 is None:
+        return bad_request('missing query parameters param1 or param2')
+
+
+    save_to_json(param1, "init.json")
+    save_to_json(param2, "aircondition_array_data")
+
+    vincent_algorithm_test() ##
+
 
     if floor_id is None:
         return bad_request('missing path parameter floor_id')
 
-    aircon1 = AirCon('RAS-22NJP', Mode.HIGH)
-    aircon2 = AirCon('RAC-22JP', Mode.OFF)
-    response = Strategy([aircon1, aircon2]).to_dict()
-    logger.info(f'API replies the strategy data {response}')
-
+    with open('output.json', 'r') as f:
+        output_data = json.load(f)
+        
     return {
         'statusCode': 200,
-        'body': json.dumps(response),
+        'body': output_data,
     }
