@@ -18,6 +18,9 @@ add_page_title()
 
 
 enabled = st.checkbox("Enable")
+if enabled:
+    st.info("Upload data to kinesis when taking photos.", icon="🤖")
+
 stream_arn = st.text_input("Kinesis Stream ARN", DEFAULT_ARN)
 picture = st.camera_input("Infrared Sensor")
 headcount = 0
@@ -39,6 +42,3 @@ if picture:
         logger.debug(f"Pushed data {data} to kinesis with response {response}")
 
 headcount = st.number_input("Number of People", value=headcount, min_value=0)
-
-if enabled:
-    st.info("Upload data to kinesis stream when taking photos.", icon="🤖")

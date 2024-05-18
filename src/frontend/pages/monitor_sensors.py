@@ -18,17 +18,6 @@ DEFAULT_ARN = "air-conditioner-strategy-SensorKinesisStream-NpM7rD086C1n"
 add_page_title()
 
 
-keep_running = st.checkbox("Enable")
-stream_arn = st.text_input("Kinesis Stream ARN", DEFAULT_ARN)
-temperature_range = st.slider("Temperature", -20.0, 60.0, (10.0, 30.0))
-humidity_range = st.slider("Relative Humidity", 0.0, 100.0, (50.0, 70.0))
-
-st.session_state.keep_running = keep_running
-st.session_state.stream_arn = stream_arn
-st.session_state.temperature_range = temperature_range
-st.session_state.humidity_range = humidity_range
-
-
 async def heartbeat():
     while st.session_state.keep_running:
         data = {
@@ -45,7 +34,20 @@ async def heartbeat():
         logger.debug(f"Pushed data {data} to kinesis with response {response}")
         time.sleep(1)
 
-if st.session_state.keep_running:
-    st.info("Keep uploading data to kinesis stream every second.", icon='🤖')
+
+keep_running = st.checkbox("Enable")
+if keep_running:
+    st.info("Upload data to kinesis every second.", icon='🤖')
+
+stream_arn = st.text_input("Sensor Kinesis Stream ARN", DEFAULT_ARN)
+temperature_range = st.slider("Temperature", -20.0, 60.0, (10.0, 30.0))
+humidity_range = st.slider("Relative Humidity", 0.0, 100.0, (50.0, 70.0))
+
+st.session_state.keep_running = keep_running
+st.session_state.stream_arn = stream_arn
+st.session_state.temperature_range = temperature_range
+st.session_state.humidity_range = humidity_range
+
+if keep_running:
     # THE CODE IS STUCK HERE
     asyncio.run(heartbeat())
