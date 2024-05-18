@@ -3,8 +3,11 @@ from pulp import LpProblem, LpMinimize, LpVariable, lpSum, value, LpStatus
 import CoolProp.CoolProp as CP
 
 DEFAULT_PRESSURE = 101325  # 标准大气压，帕斯卡
+
+
 def normalize(value, min_value, max_value):
     return (value - min_value) / (max_value - min_value)
+
 
 def calculate_ac_intensity(data):
     # Default values
@@ -52,7 +55,7 @@ def calculate_ac_intensity(data):
         time_adjustment_factor = -0.1
     else:
         time_adjustment_factor = 0.1
-    
+
     # Weighted sum of all factors
     intensity = (0.1 * time_factor +
                  0.1 * uv_factor +
@@ -66,11 +69,13 @@ def calculate_ac_intensity(data):
                  0.05 * material_factor +
                  0.05 * season_factor +
                  time_adjustment_factor)
-    
+
     # Clamp the value between 0 and 1
     intensity = max(0, min(1, intensity))
-    
+
     return intensity
+
+
 def load_from_json(filename):
     """
     Load data from a JSON file.
@@ -79,6 +84,7 @@ def load_from_json(filename):
     """
     with open(filename, 'r') as f:
         return json.load(f)
+
 
 def save_to_json(data, filename):
     """
@@ -89,6 +95,7 @@ def save_to_json(data, filename):
     with open(filename, 'w') as f:
         json.dump(data, f, indent=4)
 
+
 def calculate_cooling_power(data):
     volume = data["volume"]  # 立方米
     current_relative_humidity = data["current_relative_humidity"]  # 当前相对湿度，百分比
@@ -97,22 +104,22 @@ def calculate_cooling_power(data):
     target_time_minutes = data["target_time"]  # 分钟
     alpha_value = data["alpha_value"]
     pressure = data.get("pressure", DEFAULT_PRESSURE)  # 气压，帕斯卡，默认为标准大气压
-    
-    multiple_avlue = alpha_value / 2 +1
+
+    multiple_avlue = alpha_value / 2 + 1
 
     # 初始化空气的属性
     fluid = 'Air'
-    
+
     # 当前状态
     current_temperature_kelvin = current_temperature + 273.15  # 转换为开尔文
     current_humidity_ratio = CP.HAPropsSI('W', 'T', current_temperature_kelvin, 'P', pressure, 'RH', current_relative_humidity / 100)
     current_enthalpy = CP.HAPropsSI('H', 'T', current_temperature_kelvin, 'P', pressure, 'W', current_humidity_ratio)
-    
+
     # 目标状态
     target_temperature_kelvin = target_temperature + 273.15  # 转换为开尔文
     target_humidity_ratio = CP.HAPropsSI('W', 'T', target_temperature_kelvin, 'P', pressure, 'RH', current_relative_humidity / 100)
     target_enthalpy = CP.HAPropsSI('H', 'T', target_temperature_kelvin, 'P', pressure, 'W', target_humidity_ratio)
-    
+
     # 计算空气的密度
     density = CP.PropsSI('D', 'T', current_temperature_kelvin, 'P', pressure, fluid)
 
@@ -127,7 +134,7 @@ def calculate_cooling_power(data):
     print(f"Target enthalpy: {target_enthalpy:.2f} J/kg")
     print(f"Density: {density:.2f} kg/m³")
     print(f"Required energy: {required_energy:.2f} J")
-    
+
     return required_power * multiple_avlue
 
 
@@ -135,18 +142,19 @@ def calculate_y(z):
     # 当 z <= 0.002 时，y 为 0；当 z > 0.002 时，y 的值为 0.8*z + 0.3 且不能超过 1
     return [0 if zi <= 0.002 else min(0.8 * zi + 0.3, 1) for zi in z]
 
+
 def optimize_z(x_values, min_value):
     n = len(x_values)
     # 定义问题
     prob = LpProblem("Minimize_Y", LpMinimize)
-    
+
     # 定义变量
     z = [LpVariable(f"z{i}", 0, 1) for i in range(n)]
-    
+
     # 目标函数
     y = calculate_y(z)
     prob += lpSum(y[i] * x_values[i] for i in range(n))
-    
+
     # 约束条件
     prob += lpSum(z[i] * x_values[i] for i in range(n)) == min_value
 
@@ -154,12 +162,12 @@ def optimize_z(x_values, min_value):
     prob.solve()
 
     # 检查解的状态
-    if LpStatus[prob.status] != 'Optimal' or sum(value(zi) * x_values[i] for i, zi in enumerate(z)) < (min_value -1):
+    if LpStatus[prob.status] != 'Optimal' or sum(value(zi) * x_values[i] for i, zi in enumerate(z)) < (min_value - 1):
         # 如果没有找到最优解，或者解的总和小于 min_value，将所有 z 设置为 1
         print("sssss")
         print(sum(value(zi) * x_values[i] for i, zi in enumerate(z)))
         return [1] * n
-    
+
     # 提取结果
     optimized_z = [value(zi) for zi in z]
     return optimized_z
@@ -168,10 +176,10 @@ def optimize_z(x_values, min_value):
 def vincent_algorithm_test(data):
     # Calculate the volume
     volume = data.get('space_size', 50) * data.get('ceiling_height', 2.5)
-    
+
     # Calculate the AC intensity
     ac_intensity = calculate_ac_intensity(data)
-    
+
     # Prepare the output
     temp = {
         "volume": volume,
@@ -182,14 +190,14 @@ def vincent_algorithm_test(data):
         "alpha_value": ac_intensity,
         "pressure": data.get('pressure', 101325)
     }
-    
+
     input_data = temp
     required_power = calculate_cooling_power(input_data)
     output_data = {"required_power": required_power}
-    
+
     input_data = load_from_json("aircondition_array.json")
     min_value_data = output_data
-    
+
     x_values = list(input_data.values())
     min_value = min_value_data['required_power']
 
@@ -206,13 +214,12 @@ def vincent_algorithm_test(data):
     }
 
     print("Optimized percentages:")
-    for key, value in optimized_percentages.items():
-        print(f"{key}: {value:.2f}")
+    for key, x_value in optimized_percentages.items():
+        print(f"{key}: {x_value:.2f}")
     print(f"Total y value: {total_y:.2f}")
     print(f"Total zx value: {total_zx:.2f}")
     return output_data
 
+
 if __name__ == "__main__":
     vincent_algorithm_test()
-
-

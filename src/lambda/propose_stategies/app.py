@@ -1,13 +1,7 @@
 from enum import Enum
 import json
 import logging
-import sys
-import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# 添加 calculate_watt 所在目录到 sys.path
-sys.path.append(os.path.join(current_dir, '..'))
 from vincent_algorithm import vincent_algorithm_test
-from vincent_algorithm import save_to_json
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -60,7 +54,7 @@ def lambda_handler(event, context):
         return bad_request('missing path parameter floor_id')
 
     input_data = json.loads(event.get('body', '{}'))
-    output_data = vincent_algorithm_test(input_data) ##
+    output_data = vincent_algorithm_test(input_data)
 
     return {
         'statusCode': 200,
