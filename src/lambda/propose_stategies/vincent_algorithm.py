@@ -1,5 +1,4 @@
 import json
-import numpy as np
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, value, LpStatus
 import CoolProp.CoolProp as CP
 
