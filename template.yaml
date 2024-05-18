@@ -33,6 +33,20 @@ Resources:
           Properties:
             Path: /rooms/{room_id}/activity
             Method: get
+        DataStream:
+          Type: Kinesis
+          Properties:
+            Stream: !GetAtt ActivityKinesisStream.Arn
+            StartingPosition: LATEST
+            BatchSize: 10
+            BisectBatchOnFunctionError: true
+            MaximumRetryAttempts: 1
+            ParallelizationFactor: 5
+
+  ActivityKinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      ShardCount: 1
 
   InvestigateLayouts:
     Type: AWS::Serverless::Function
@@ -112,6 +126,9 @@ Outputs:
   DetectActivitiesApi:
     Description: "API Gateway endpoint URL for Prod stage"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/rooms/0/activity"
+  ActivityKinesisStreamArn:
+    Description: Activity kinesis stream ARN
+    Value: !Ref ActivityKinesisStream
   SensorKinesisStreamArn:
     Description: Sensor kinesis stream ARN
     Value: !Ref SensorKinesisStream
