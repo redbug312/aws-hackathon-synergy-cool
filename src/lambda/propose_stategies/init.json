@@ -1,0 +1,17 @@
+{
+    "time": 14,
+    "uv_index": 7,
+    "number_of_people": 5,
+    "space_size": 50,
+    "ceiling_height": 2.5,
+    "humidity": 60,
+    "temperature": 30,
+    "co2_concentration": 500,
+    "stress_index": 40,
+    "air_quality": 50,
+    "building_material": 70,
+    "month": 7,
+    "target_temperature": 27,
+    "target_time": 12,
+    "pressure": 101325
+}

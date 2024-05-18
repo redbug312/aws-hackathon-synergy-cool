@@ -9,7 +9,7 @@ sys.path.append(os.path.join(current_dir, '..'))
 from vincent_algorithm import vincent_algorithm_test
 from calculate_watt import calculate_watt_test
 from calculate_watt import save_to_json
-
+from init_data      import init_data_test
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -66,9 +66,10 @@ def lambda_handler(event, context):
         return bad_request('missing query parameters param1 or param2')
 
 
-    save_to_json(param1, "input.json")
+    save_to_json(param1, "init.json")
     save_to_json(param2, "aircondition_array_data")
 
+    init_data_test()
     calculate_watt_test()
     vincent_algorithm_test() ##
 
