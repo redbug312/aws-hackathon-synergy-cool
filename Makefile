@@ -13,7 +13,11 @@ endif
 lint: venv
 	$(ENV) pycodestyle src test --ignore=E501
 
-venv: src/generate-recommendations/requirements.txt
+.PHONY: run
+run: venv
+	$(ENV) streamlit run src/frontend/homepage.py
+
+venv: src/layer/python/requirements.txt
 	virtualenv -p $(PYTHON3) venv
 	$(ENV) $(PYTHON3) -m pip install -r $^
 	touch $@  # update timestamp

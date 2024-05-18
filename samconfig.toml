@@ -1,9 +1,8 @@
 version = 0.1
 [default.deploy.parameters]
-stack_name = "sensor-monitoring"
+stack_name = "air-conditioner-strategy"
 resolve_s3 = true
-s3_prefix = "sensor-monitoring"
+s3_prefix = "air-conditioner-strategy"
 region = "us-west-2"
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "NotificationSNSTopicName=\"notification-topic\" NotificationEmail=\"redbug312@gmail.com\" BedrockModelId=\"anthropic.claude-v2:1\""
 image_repositories = []
