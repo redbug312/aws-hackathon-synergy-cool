@@ -1,0 +1,9 @@
+{
+    "volume": 82.0,
+    "current_relative_humidity": 70.0,
+    "current_temperature": 32.0,
+    "target_temperature": 27.0,
+    "target_time": 12,
+    "alpha_value": 0.1,
+    "pressure": 101325
+}
