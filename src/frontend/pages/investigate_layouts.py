@@ -41,8 +41,9 @@ so just propose one proper question to user every time.
 3. If human respond an AC not recognized, confirm with human. Skip those
    unrecognized AC units in the following dialogs.
 4. If collected enough info, confirm with user and output the conclusion in
-   JSON format. Attach the sentence "{secret_word}" before the JSON code and put
-   the JSON code in code blocks. Always use metric system in the JSON code.
+   JSON format. Attach the sentence "{secret_word}" (case-sensitive) before
+   the JSON code and put the JSON code in code blocks. Always use metric system
+   in the JSON code.
 
 {format_instructions}
 
