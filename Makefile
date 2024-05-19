@@ -11,7 +11,7 @@ endif
 
 .PHONY: lint
 lint: venv
-	$(ENV) pycodestyle src test --ignore=E501
+	$(ENV) pycodestyle src test --ignore=E501,W504
 
 .PHONY: run
 run: venv

@@ -1,6 +1,7 @@
 from enum import Enum
 import json
 import logging
+from vincent_algorithm import vincent_algorithm_test
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -52,12 +53,10 @@ def lambda_handler(event, context):
     if floor_id is None:
         return bad_request('missing path parameter floor_id')
 
-    aircon1 = AirCon('RAS-22NJP', Mode.HIGH)
-    aircon2 = AirCon('RAC-22JP', Mode.OFF)
-    response = Strategy([aircon1, aircon2]).to_dict()
-    logger.info(f'API replies the strategy data {response}')
+    input_data = json.loads(event.get('body', '{}'))
+    output_data = vincent_algorithm_test(input_data)
 
     return {
         'statusCode': 200,
-        'body': json.dumps(response),
+        'body': json.dumps(output_data),
     }

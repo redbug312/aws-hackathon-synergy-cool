@@ -1,4 +1,5 @@
 CoolProp==6.6.0
+PuLP==2.8.0
 pycodestyle==2.11.1
 pyfluids==2.6.0
 tomli==2.0.1

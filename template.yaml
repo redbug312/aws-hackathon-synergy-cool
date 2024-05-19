@@ -136,7 +136,7 @@ Resources:
           Type: Api
           Properties:
             Path: /floors/{floor_id}/strategy
-            Method: get
+            Method: post
 
 Outputs:
   DetectActivitiesApi:
