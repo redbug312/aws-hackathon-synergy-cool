@@ -3,6 +3,7 @@ from streamlit.logger import get_logger
 from st_pages import add_page_title
 
 import boto3
+from boto3.dynamodb.conditions import Key
 import itertools
 import json
 import logging
@@ -15,6 +16,9 @@ add_page_title()
 
 lambda_client = boto3.client("lambda")
 PROPOSE_STRATEGIES_NAME = "air-conditioner-strategy-ProposeStrategies-2t2LAjv0qfzw"
+
+dynamodb = boto3.resource("dynamodb")
+table = dynamodb.Table("SensorDatabaseTable")
 
 
 def invoke_propose_strategies(request: dict):
@@ -66,12 +70,26 @@ else:
         itertools.repeat(0.0)  # avoid iterator end exception
     )
 
-    for room in conclusion["rooms"]:
+    for (room_id, room) in enumerate(conclusion["rooms"]):
         st.subheader(room["name"])
+
         columns = st.columns(3)
         for (column, unit) in zip(columns, room["aircons"]):
             number = int(100 * next(percents))
             column.metric(label=unit, value=f"{number} %")
+
+        response = table.query(
+            TableName="SensorDatabaseTable",
+            KeyConditionExpression=Key("id").eq(str(room_id)),
+        )
+        items = response["Items"]
+        if len(items) == 0:
+            st.write("Sensor disconnected")
+        else:
+            temperature = items[0]["temperature"]
+            humidity = items[0]["humidity"]
+            st.write(f"Temperature {temperature:.1f}°C and humidity {humidity:.1f}%")
+
         st.divider()
 
 
