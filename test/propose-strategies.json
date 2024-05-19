@@ -2,5 +2,5 @@
   "pathParameters": {
     "floor_id": "0"
   },
-  "body": "{\"param1\": 1, \"param2\": 2}"
+  "body": "{\r\n    \"time\": 14,\r\n    \"uv_index\": 7,\r\n    \"number_of_people\": 5,\r\n    \"space_size\": 50,\r\n    \"ceiling_height\": 2.5,\r\n    \"humidity\": 60,\r\n    \"temperature\": 30,\r\n    \"co2_concentration\": 500,\r\n    \"stress_index\": 40,\r\n    \"air_quality\": 50,\r\n    \"building_material\": 70,\r\n    \"month\": 7,\r\n    \"target_temperature\": 27,\r\n    \"target_time\": 12,\r\n    \"pressure\": 101325\r\n}"
 }
